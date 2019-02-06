@@ -24,7 +24,10 @@ const ApplicationSchema = new Schema({
     type: String,
     required: true,
     select: false,
-    get: decryptValue,
+    get: v => {
+      let decrypted = decryptValue(v);
+      return JSON.parse(decrypted);
+    },
     set: v => {
       let stringified = JSON.stringify(v);
       let encrypted = encryptValue(stringified);

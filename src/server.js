@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({ limit: "15mb" }));
 app.use(passport.initialize());
 
+// Passport config
+require("./config/passport")(passport);
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
 Routes(app);
