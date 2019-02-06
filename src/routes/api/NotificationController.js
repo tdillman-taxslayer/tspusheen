@@ -74,8 +74,13 @@ const sendAll = async (req, res) => {
     throw error;
   }
 };
-
-const initOrReturnFirebaseApp = async (application, req) => {
+/**
+ *
+ * @param {*} application
+ * @param {*} req
+ * @returns {Promise<firebase.messaging>}
+ */
+export const initOrReturnFirebaseApp = async (application, req) => {
   let foundApp;
   let fb;
   const { provider_credentials, database_url, id } = application;
@@ -88,10 +93,15 @@ const initOrReturnFirebaseApp = async (application, req) => {
     fb = foundApp;
   } else {
     let initFB = initFirebase(provider_credentials, database_url, id);
-    return initFB.messaging();
+    return initFB.messaging().subscribeToTopic();
   }
 
   return firebase.messaging(fb);
+};
+
+export const subscribeToTopic = async (application, token, req) => {
+  let fb = await initOrReturnFirebaseApp(application, req);
+  return await fb.subscribeToTopic(token, application.id);
 };
 
 /**

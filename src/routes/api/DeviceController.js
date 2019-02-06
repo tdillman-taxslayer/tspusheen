@@ -1,8 +1,12 @@
 import express from "express";
 import passport from "passport";
 import Device from "../../models/Device";
-import { lookupFullApp } from "./NotificationController";
+import {
+  lookupFullApp,
+  initOrReturnFirebaseApp
+} from "./NotificationController";
 import { requireKey } from "../../utils/utils";
+import Application from "../../models/Application";
 
 const router = express.Router();
 
@@ -49,8 +53,24 @@ const getDevices = async (req, res) => {
  * @param {Reponse} res
  */
 const registerDevice = async (req, res) => {
+  const { client_application_key } = req.headers;
   let newDevice = new Device(req.body);
-  return await newDevice.save();
+  let application = await Application.findOne({
+    client_key: client_application_key
+  }).select("client_key secret_key provider_credentials database_url");
+  if (!application) {
+    return res.status(404).json({
+      error: `Cannot register device with appllication id: ${client_application_key} as it does not exist. `
+    });
+  }
+
+  let fb = await initOrReturnFirebaseApp(application, req);
+  let registration = await fb.subscribeToTopic(
+    newDevice.device_token,
+    client_application_key
+  );
+  await newDevice.save();
+  return { device: newDevice, topics: registration };
 };
 
 const performAction = async (req, res, fn) => {
