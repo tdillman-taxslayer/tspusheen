@@ -44,3 +44,17 @@ export const requireKey = (req, res, next) => {
     return res.status(403).json({ error: "Not authorized to make changes" });
   }
 };
+
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} fn
+ */
+export const performAction = async (req, res, fn) => {
+  try {
+    return res.json(await fn(req, res));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

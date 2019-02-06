@@ -2,7 +2,6 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import cryptoString from "crypto-random-string";
 import jwt from "jsonwebtoken";
-import passport from "passport";
 import Application from "../../models/Application";
 import { JWT_SECRET_KEY } from "../../config/config";
 
@@ -15,6 +14,7 @@ router.get(
 );
 // /applications
 router.post("/", async (req, res) => await performAction(req, res, create));
+
 // /applications/authenticate
 router.post(
   "/authenticate",
@@ -36,11 +36,12 @@ const getAll = async (req, res) => {
 const create = async (req, res) => {
   let newApplication = new Application(req.body);
   newApplication.client_key = cryptoString(40);
-  let secretKey = cryptoString(40);
-  let salt = await bcrypt.genSalt(10);
-  let hash = await bcrypt.hash(secretKey, salt);
-  newApplication.secret_key = hash;
-  return { application: await newApplication.save(), secret: secretKey };
+  let secretKey = await Application.generateSecretKey(40);
+  newApplication.secret_key = secretKey.hash;
+  return {
+    application: await newApplication.save(),
+    secret: secretKey.secretKey
+  };
 };
 
 const authenticate = async (req, res) => {
