@@ -10,7 +10,7 @@ const router = express.Router();
 // /applications
 router.get(
   "/",
-  passport.authenticate("jwt", { session: false }),
+  // passport.authenticate("jwt", { session: false }),
   async (req, res) => await performAction(req, res, getAll)
 );
 // /applications
@@ -30,7 +30,7 @@ const performAction = async (req, res, fn) => {
 };
 
 const getAll = async (req, res) => {
-  return await Application.find();
+  return await Application.find().select("client_key secret_key");
 };
 
 const create = async (req, res) => {

@@ -6,12 +6,11 @@ const ApplicationSchema = new Schema({
     type: String,
     required: true
   },
+  /* this is considered public and not secure, compromised client_keys are not an issue */
   client_key: {
     type: String,
     required: true,
-    select: false,
-    get: decryptValue,
-    set: encryptValue
+    select: false
   },
   secret_key: {
     type: String,
@@ -48,5 +47,5 @@ const ApplicationSchema = new Schema({
   }
 });
 
-const Application = mongoose.model("application", ApplicationSchema);
+const Application = mongoose.model("applications", ApplicationSchema);
 export default Application;
