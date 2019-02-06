@@ -1,5 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { decryptValue, encryptValue } from "../utils/utils";
+import cryptoString from "crypto-random-string";
+import bcrypt from "bcryptjs";
 
 const ApplicationSchema = new Schema({
   name: {
@@ -12,11 +14,15 @@ const ApplicationSchema = new Schema({
     required: true,
     select: false
   },
+  /** Essentially a password for the application */
   secret_key: {
     type: String,
     required: true,
     select: false,
-    get: decryptValue,
+    get: v => {
+      let decrypted = decryptValue(v);
+      return decrypted;
+    },
     set: encryptValue
   },
   provider_credentials: {
@@ -46,6 +52,17 @@ const ApplicationSchema = new Schema({
     enum: ["firebase"]
   }
 });
+/**
+ * Generates a secret key
+ * @param {Number} length length of the key to generate
+ * @returns { hash: String, secretKey: String }
+ */
+ApplicationSchema.statics.generateSecretKey = async function(length) {
+  let secretKey = cryptoString(length);
+  let salt = await bcrypt.genSalt(10);
+  let hash = await bcrypt.hash(secretKey, salt);
+  return { hash, secretKey };
+};
 
 const Application = mongoose.model("applications", ApplicationSchema);
 export default Application;

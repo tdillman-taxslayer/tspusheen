@@ -6,16 +6,20 @@ import { requireKey } from "../../utils/utils";
 
 const router = express.Router();
 
+// Returns all the devices registered with the application
 // GET /devices
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => performAction(req, res, getDevices)
 );
-// GET /devices/:deviceId
 
-// Gets list of devices registered to the specific user
-// GET /devices/user/:userId
+// determines if the device is registered with the application or not
+router.get(
+  "/registered",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => performAction(req, res, isRegistered)
+);
 
 // registers a device
 // POST /devices
@@ -24,6 +28,15 @@ router.post(
   requireKey,
   async (req, res) => await performAction(req, res, registerDevice)
 );
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ */
+const isRegistered = async (req, res) => {
+  const { deviceId } = req.query;
+  console.log(deviceId);
+};
 
 const getDevices = async (req, res) => {
   let application = await lookupFullApp(req.user.id);
