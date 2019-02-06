@@ -46,7 +46,7 @@ const getApplication = async (req, res) => {
 
 const getAllApplications = async (req, res) => {
   let applications = await Application.find().select(
-    "secret_key client_key provider_credentials"
+    "secret_key client_key provider_credentials database_url"
   );
   let resolved = [];
   applications.forEach(application => {
@@ -55,7 +55,8 @@ const getAllApplications = async (req, res) => {
       secret_key: application.secret_key,
       client_key: application.client_key,
       name: application.name,
-      provider_credentials: application.provider_credentials
+      provider_credentials: application.provider_credentials,
+      database_url: application.database_url
     });
   });
   return resolved;

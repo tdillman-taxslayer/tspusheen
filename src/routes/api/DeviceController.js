@@ -57,7 +57,12 @@ const registerDevice = async (req, res) => {
   let newDevice = new Device(req.body);
   let application = await Application.findOne({
     client_key: client_application_key
-  }).select("client_key secret_key provider_credentials database_url");
+  }).select({
+    client_key: 1,
+    secret_key: 1,
+    provider_credentials: 1,
+    database_url: 1
+  });
   if (!application) {
     return res.status(404).json({
       error: `Cannot register device with appllication id: ${client_application_key} as it does not exist. `
@@ -67,8 +72,12 @@ const registerDevice = async (req, res) => {
   let fb = await initOrReturnFirebaseApp(application, req);
   let registration = await fb.subscribeToTopic(
     newDevice.device_token,
-    client_application_key
+    application.id
   );
+  if (registration.errors.length > 0) {
+    let newErr = new Error(registration.errors[0].error);
+    throw newErr;
+  }
   await newDevice.save();
   return { device: newDevice, topics: registration };
 };

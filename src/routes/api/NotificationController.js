@@ -83,20 +83,25 @@ const sendAll = async (req, res) => {
 export const initOrReturnFirebaseApp = async (application, req) => {
   let foundApp;
   let fb;
+  let foundIndex;
   const { provider_credentials, database_url, id } = application;
-  firebase.apps.forEach(e => {
+  for (let i = 0; i < firebase.apps.length; i++) {
+    let e = firebase.apps[i];
     if (e.name === id) {
       foundApp = e;
+      foundIndex = i;
     }
-  });
+  }
   if (foundApp) {
-    fb = foundApp;
+    return foundApp.messaging();
   } else {
     let initFB = initFirebase(provider_credentials, database_url, id);
-    return initFB.messaging().subscribeToTopic();
+    console.log(firebase.app.name);
+    console.log(firebase);
+    return initFB.messaging();
   }
 
-  return firebase.messaging(fb);
+  return firebase.messaging(firebase.apps[foundIndex]);
 };
 
 export const subscribeToTopic = async (application, token, req) => {
