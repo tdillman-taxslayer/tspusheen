@@ -30,6 +30,14 @@ import bcrypt from "bcryptjs";
  *        type: string
  *        enum:
  *        - "firebase"
+ *  Application_Light:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      client_key:
+ *        type: string
+ *        description: public facing key, used by clients to identify what application they belong too.  THIS IS NOT A SECRET.  Do Not Use as a "security" feature.
  */
 const ApplicationSchema = new Schema({
   name: {

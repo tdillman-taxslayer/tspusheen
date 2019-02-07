@@ -17,7 +17,7 @@ const router = express.Router();
  *          in: path
  *          required: true
  *          type: string
- *        - name: admin_application_key
+ *        - name: admin_client_key
  *          description: admin application secret key
  *          in: header
  *          required: true
@@ -29,6 +29,8 @@ const router = express.Router();
  *              $ref: "#/definitions/Application"
  *        403:
  *          description: not authorized to make changes
+ *      security:
+ *        - admin_client_key: []
  */
 router.get(
   "/applications/:applicationId",
@@ -46,7 +48,22 @@ router.get(
  *        - application/json
  *      parameters:
  *        - name: applicationId
- *
+ *          description: Application Object ID
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: admin_client_key
+ *          description: admin application secret key
+ *          in: header
+ *          required: true
+ *          type: string
+ *      responses:
+ *        200:
+ *          description: valid application
+ *          schema:
+ *              $ref: "#/definitions/Application"
+ *        403:
+ *          description: not authorized to make changes
  */
 router.get(
   "/applications/:applicationId/reset",
@@ -54,6 +71,30 @@ router.get(
   async (req, res) => await performAction(req, res, resetSecretKey)
 );
 
+/**
+ * @swagger
+ * paths:
+ *  /utils/applications:
+ *    get:
+ *      description: Resets the secret key for the application ID.
+ *      produces:
+ *        - application/json
+ *      parameters:
+ *        - name: admin_client_key
+ *          description: admin application secret key
+ *          in: header
+ *          required: true
+ *          type: string
+ *      responses:
+ *        200:
+ *          description: valid application
+ *          schema:
+ *            type: array
+ *            items:
+ *              $ref: "#/definitions/Application"
+ *        403:
+ *          description: not authorized to make changes
+ */
 router.get(
   "/applications",
   requireAdminKey,
