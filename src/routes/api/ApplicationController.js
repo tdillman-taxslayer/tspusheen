@@ -33,6 +33,11 @@ const router = express.Router();
  *        required: true
  *        schema:
  *          $ref: "#/definitions/Application"
+ *      reponses:
+ *        200:
+ *          description: Successful operation
+ *          schema:
+ *            $ref: "#/definitions/Application"
  */
 // /applications
 router.get(
@@ -55,7 +60,7 @@ router.post("/", async (req, res) => await performAction(req, res, create));
  *        schema:
  *          $ref: "#/definitions/Authentication"
  *        required: true
-  * definitions:
+ * definitions:
  *  Authentication:
  *    required:
  *    - id
@@ -67,7 +72,6 @@ router.post("/", async (req, res) => await performAction(req, res, create));
  *      secret_key:
  *        type: string
  *        description: auto generated, hashed and encrypted "password"
-
  */
 
 // /applications/authenticate

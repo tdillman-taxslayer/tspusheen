@@ -10,8 +10,13 @@ import Application from "../../models/Application";
 
 const router = express.Router();
 
-// Returns all the devices registered with the application
-// GET /devices
+/**
+ * @swagger
+ * paths:
+ *  /devices:
+ *    get:
+ *      description: "Get all devices registered with application"
+ */
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
