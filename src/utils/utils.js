@@ -4,6 +4,10 @@ import {
   ADMIN_CLIENT_HEADER_KEY
 } from "../config/config";
 import Application from "../models/Application";
+/**
+ * Encrypts a value using AES 256 CBC
+ * @param {String} text
+ */
 export const encryptValue = text => {
   let cipher = crypto.createCipher("aes-256-cbc", SERVER_ENCRYPTION_KEY);
   let crypted = cipher.update(text, "utf8", "hex");
@@ -11,6 +15,10 @@ export const encryptValue = text => {
   return crypted;
 };
 
+/**
+ * Decrypts String via AES 256 CBC
+ * @param {String} encryptedValue
+ */
 export const decryptValue = encryptedValue => {
   if (encryptedValue === null || typeof encryptedValue === "undefined") {
     return text;
@@ -48,6 +56,12 @@ export const requireKey = (req, res, next) => {
   }
 };
 
+/**
+ * Ensures the incoming request from an admin is allowed. Protects route from unauthorized access.
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next
+ */
 export const requireAdminKey = (req, res, next) => {
   const { admin_client_key } = req.headers;
   if (!admin_client_key) {
