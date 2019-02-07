@@ -1,21 +1,24 @@
 import express from "express";
-import { performAction } from "../../utils/utils";
+import { performAction, requireAdminKey } from "../../utils/utils";
 import Application from "../../models/Application";
 
 const router = express.Router();
 
 router.get(
   "/applications/:applicationId",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, getApplication)
 );
 
 router.get(
   "/applications/:applicationId/reset",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, resetSecretKey)
 );
 
 router.get(
   "/applications",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, getAllApplications)
 );
 

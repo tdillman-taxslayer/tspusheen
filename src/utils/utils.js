@@ -1,5 +1,8 @@
 import crypto from "crypto";
-import { SERVER_ENCRYPTION_KEY } from "../config/config";
+import {
+  SERVER_ENCRYPTION_KEY,
+  ADMIN_CLIENT_HEADER_KEY
+} from "../config/config";
 import Application from "../models/Application";
 export const encryptValue = text => {
   let cipher = crypto.createCipher("aes-256-cbc", SERVER_ENCRYPTION_KEY);
@@ -43,6 +46,17 @@ export const requireKey = (req, res, next) => {
   } else {
     return res.status(403).json({ error: "Not authorized to make changes" });
   }
+};
+
+export const requireAdminKey = (req, res, next) => {
+  const { admin_client_key } = req.headers;
+  if (!admin_client_key) {
+    return res.status(403).json({ error: "Not authorized to make changes" });
+  }
+  if (admin_client_key !== ADMIN_CLIENT_HEADER_KEY) {
+    return res.status(403).json({ error: "Not authorized to make changes." });
+  }
+  return next();
 };
 
 /**
