@@ -37,10 +37,30 @@ router.get(
  * paths:
  *  /devices/registered:
  *    post:
- *      description: Determines if the device with deviceId query parameter is registered with the application or not.
+ *      description: Determines if the device with device token is registered with the application or not.
+ *      parameters:
+ *        - name: client_key
+ *          description: Application client key
+ *          in: header
+ *          required: true
+ *        - name: body
+ *          in: body
+ *          required: true
+ *          description: "JSON Body"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              deviceToken:
+ *                type: string
+ *                required: true
  *      responses:
  *        200:
  *          description: Returns boolean value indicating if device is registered with application or not.
+ *          schema:
+ *            type: object
+ *            properties:
+ *              registered:
+ *                type: boolean
  *        500:
  *          description: Server encountered an error
  */
@@ -62,7 +82,11 @@ router.post(
  *       required: true
  *       type: string
  *       description: Device Application Client Key used to identify which application the device is registering with
- *
+ *     - name: body
+ *       in: body
+ *       required: true
+ *       schema:
+ *        $ref: "#/definitions/Device_Create"
  */
 router.post(
   "/register",
