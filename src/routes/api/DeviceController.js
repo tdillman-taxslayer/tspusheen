@@ -10,8 +10,19 @@ import Application from "../../models/Application";
 
 const router = express.Router();
 
-// Returns all the devices registered with the application
-// GET /devices
+/**
+ * @swagger
+ * paths:
+ *  /devices:
+ *    get:
+ *      description: "Get all devices registered with application"
+ *      responses:
+ *        200:
+ *          description: Returns array of Devices registered with application
+ *          type: array
+ *          items:
+ *            $ref: "#/definitions/Device"
+ */
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
@@ -25,8 +36,11 @@ router.get(
   async (req, res) => performAction(req, res, isRegistered)
 );
 
-// registers a device
-// POST /devices
+/**
+ * @swagger
+ * paths:
+ *  /devices/register
+ */
 router.post(
   "/register",
   requireKey,

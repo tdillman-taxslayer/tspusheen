@@ -1,21 +1,103 @@
 import express from "express";
-import { performAction } from "../../utils/utils";
+import { performAction, requireAdminKey } from "../../utils/utils";
 import Application from "../../models/Application";
 
 const router = express.Router();
-
+/**
+ * @swagger
+ * paths:
+ *  /utils/applications/{applicationId}:
+ *    get:
+ *      description: Get the application by the Object ID
+ *      produces:
+ *        - application/json
+ *      parameters:
+ *        - name: applicationId
+ *          description: Application Object ID
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: admin_client_key
+ *          description: admin application secret key
+ *          in: header
+ *          required: true
+ *          type: string
+ *      responses:
+ *        200:
+ *          description: valid application
+ *          schema:
+ *              $ref: "#/definitions/Application"
+ *        403:
+ *          description: not authorized to make changes
+ *      security:
+ *        - admin_client_key: []
+ */
 router.get(
   "/applications/:applicationId",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, getApplication)
 );
 
+/**
+ * @swagger
+ * paths:
+ *  /utils/applications/{applicationId}/reset:
+ *    get:
+ *      description: Resets the secret key for the application ID.
+ *      produces:
+ *        - application/json
+ *      parameters:
+ *        - name: applicationId
+ *          description: Application Object ID
+ *          in: path
+ *          required: true
+ *          type: string
+ *        - name: admin_client_key
+ *          description: admin application secret key
+ *          in: header
+ *          required: true
+ *          type: string
+ *      responses:
+ *        200:
+ *          description: valid application
+ *          schema:
+ *              $ref: "#/definitions/Application"
+ *        403:
+ *          description: not authorized to make changes
+ */
 router.get(
   "/applications/:applicationId/reset",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, resetSecretKey)
 );
 
+/**
+ * @swagger
+ * paths:
+ *  /utils/applications:
+ *    get:
+ *      description: Resets the secret key for the application ID.
+ *      produces:
+ *        - application/json
+ *      parameters:
+ *        - name: admin_client_key
+ *          description: admin application secret key
+ *          in: header
+ *          required: true
+ *          type: string
+ *      responses:
+ *        200:
+ *          description: valid application
+ *          schema:
+ *            type: array
+ *            items:
+ *              $ref: "#/definitions/Application"
+ *        403:
+ *          description: not authorized to make changes
+ */
 router.get(
   "/applications",
+  requireAdminKey,
   async (req, res) => await performAction(req, res, getAllApplications)
 );
 

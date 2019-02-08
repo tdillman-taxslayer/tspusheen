@@ -6,6 +6,39 @@ import Application from "../../models/Application";
 import { JWT_SECRET_KEY } from "../../config/config";
 
 const router = express.Router();
+/**
+ * @swagger
+ * paths:
+ *  /applications:
+ *    get:
+ *      description: Gets a brief list of applications registered on the server.  This spits out public information.
+ *      responses:
+ *        200:
+ *          description: Successful operation
+ *          schema:
+ *            type: array
+ *            items:
+ *              $ref: "#/definitions/Application_Light"
+ *    post:
+ *      summary: "Create and register a new application."
+ *      operationId: "create"
+ *      consumes:
+ *      - "application/json"
+ *      produces:
+ *      - "application/json"
+ *      parameters:
+ *      - in: body
+ *        name: body
+ *        description: "Application Object"
+ *        required: true
+ *        schema:
+ *          $ref: "#/definitions/Application"
+ *      reponses:
+ *        200:
+ *          description: Successful operation
+ *          schema:
+ *            $ref: "#/definitions/Application"
+ */
 // /applications
 router.get(
   "/",
@@ -14,6 +47,32 @@ router.get(
 );
 // /applications
 router.post("/", async (req, res) => await performAction(req, res, create));
+/**
+ * @swagger
+ * paths:
+ *  /applications/authenticate:
+ *    post:
+ *      description: authenticates with application
+ *      parameters:
+ *      - in: body
+ *        name: body
+ *        description: "Required parameters to authenticate with application"
+ *        schema:
+ *          $ref: "#/definitions/Authentication"
+ *        required: true
+ * definitions:
+ *  Authentication:
+ *    required:
+ *    - id
+ *    - secret_key
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      secret_key:
+ *        type: string
+ *        description: auto generated, hashed and encrypted "password"
+ */
 
 // /applications/authenticate
 router.post(
@@ -30,7 +89,7 @@ const performAction = async (req, res, fn) => {
 };
 
 const getAll = async (req, res) => {
-  return await Application.find().select("client_key secret_key");
+  return await Application.find().select("client_key");
 };
 
 const create = async (req, res) => {
@@ -43,7 +102,11 @@ const create = async (req, res) => {
     secret: secretKey.secretKey
   };
 };
-
+/**
+ * Authenticate with application requiring id and secret key
+ * @param {Request} req
+ * @param {Response} res
+ */
 const authenticate = async (req, res) => {
   const { id, secretKey } = req.body;
   if (!id) {
