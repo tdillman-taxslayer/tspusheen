@@ -22,6 +22,9 @@ const router = express.Router();
  *          type: array
  *          items:
  *            $ref: "#/definitions/Device"
+ *        500:
+ *          description: Server encountered an error
+ *
  */
 router.get(
   "/",
@@ -29,8 +32,19 @@ router.get(
   async (req, res) => performAction(req, res, getDevices)
 );
 
-// determines if the device is registered with the application or not
-router.get(
+/**
+ * @swagger
+ * paths:
+ *  /devices/registered:
+ *    post:
+ *      description: Determines if the device with deviceId query parameter is registered with the application or not.
+ *      responses:
+ *        200:
+ *          description: Returns boolean value indicating if device is registered with application or not.
+ *        500:
+ *          description: Server encountered an error
+ */
+router.post(
   "/registered",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => performAction(req, res, isRegistered)
@@ -39,7 +53,16 @@ router.get(
 /**
  * @swagger
  * paths:
- *  /devices/register
+ *  /devices/register:
+ *    post:
+ *     description: Register device with application
+ *     parameters:
+ *     - name: client_key
+ *       in: header
+ *       required: true
+ *       type: string
+ *       description: Device Application Client Key used to identify which application the device is registering with
+ *
  */
 router.post(
   "/register",
@@ -54,6 +77,7 @@ router.post(
 const isRegistered = async (req, res) => {
   const { deviceId } = req.query;
   console.log(deviceId);
+  res.status(404).json({ error: "endpoint is not finished" });
 };
 
 const getDevices = async (req, res) => {
