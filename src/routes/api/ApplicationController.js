@@ -102,7 +102,11 @@ const create = async (req, res) => {
     secret: secretKey.secretKey
   };
 };
-
+/**
+ * Authenticate with application requiring id and secret key
+ * @param {Request} req
+ * @param {Response} res
+ */
 const authenticate = async (req, res) => {
   const { id, secretKey } = req.body;
   if (!id) {

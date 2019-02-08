@@ -16,6 +16,12 @@ const router = express.Router();
  *  /devices:
  *    get:
  *      description: "Get all devices registered with application"
+ *      responses:
+ *        200:
+ *          description: Returns array of Devices registered with application
+ *          type: array
+ *          items:
+ *            $ref: "#/definitions/Device"
  */
 router.get(
   "/",
@@ -30,8 +36,11 @@ router.get(
   async (req, res) => performAction(req, res, isRegistered)
 );
 
-// registers a device
-// POST /devices
+/**
+ * @swagger
+ * paths:
+ *  /devices/register
+ */
 router.post(
   "/register",
   requireKey,
