@@ -98,10 +98,14 @@ router.post(
  * @param {Request} req
  * @param {Response} res
  */
-const isRegistered = async (req, res) => {
-  const { deviceId } = req.query;
-  console.log(deviceId);
-  res.status(404).json({ error: "endpoint is not finished" });
+export const isRegistered = async (req, res) => {
+  const { client_key } = req.headers;
+  const { deviceToken } = req.body;
+  if (!deviceToken) {
+    let err = new Error();
+    err.message = "Device Token is required.";
+    throw err;
+  }
 };
 
 const getDevices = async (req, res) => {

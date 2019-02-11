@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { decryptValue, encryptValue } from "../utils/utils";
+import Utils from "../utils/utils";
+
 import cryptoString from "crypto-random-string";
 import bcrypt from "bcryptjs";
 /**
@@ -56,22 +57,24 @@ const ApplicationSchema = new Schema({
     required: true,
     select: false,
     get: v => {
-      let decrypted = decryptValue(v);
+      let decrypted = Utils.decryptValue(v);
       return decrypted;
     },
-    set: encryptValue
+    set: v => {
+      return Utils.encryptValue(v);
+    }
   },
   provider_credentials: {
     type: String,
     required: true,
     select: false,
     get: v => {
-      let decrypted = decryptValue(v);
+      let decrypted = Utils.decryptValue(v);
       return JSON.parse(decrypted);
     },
     set: v => {
       let stringified = JSON.stringify(v);
-      let encrypted = encryptValue(stringified);
+      let encrypted = Utils.encryptValue(stringified);
       return encrypted;
     }
   },
@@ -79,8 +82,12 @@ const ApplicationSchema = new Schema({
     type: String,
     required: true,
     select: false,
-    get: decryptValue,
-    set: encryptValue
+    get: v => {
+      return Utils.decryptValue(v);
+    },
+    set: v => {
+      return Utils.encryptValue(v);
+    }
   },
   provider: {
     type: String,

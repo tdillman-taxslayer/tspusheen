@@ -106,7 +106,7 @@ router.get(
  * @param {Request} req
  * @param {Response} res
  */
-const getApplication = async (req, res) => {
+export const getApplication = async (req, res) => {
   const { applicationId } = req.params;
   let application = await Application.findById(applicationId).select(
     "secret_key client_key provider_credentials"
@@ -126,7 +126,7 @@ const getApplication = async (req, res) => {
   return app;
 };
 
-const getAllApplications = async (req, res) => {
+export const getAllApplications = async (req, res) => {
   let applications = await Application.find().select(
     "secret_key client_key provider_credentials database_url"
   );
@@ -149,7 +149,7 @@ const getAllApplications = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  */
-const resetSecretKey = async (req, res) => {
+export const resetSecretKey = async (req, res) => {
   const { applicationId } = req.params;
   let application = await Application.findById(applicationId).select(
     "secret_key client_key provider_credentials"
