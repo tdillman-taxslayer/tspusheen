@@ -5,7 +5,7 @@ import {
   lookupFullApp,
   initOrReturnFirebaseApp
 } from "./NotificationController";
-import { requireKey } from "../../utils/utils";
+import { Utils, HeaderSecurity } from "../../utils/utils";
 import Application from "../../models/Application";
 
 const router = express.Router();
@@ -29,7 +29,7 @@ const router = express.Router();
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
-  async (req, res) => performAction(req, res, getDevices)
+  async (req, res) => Utils.performAction(req, res, DeviceController.getDevices)
 );
 
 /**
@@ -67,7 +67,8 @@ router.get(
 router.post(
   "/registered",
   passport.authenticate("jwt", { session: false }),
-  async (req, res) => performAction(req, res, isRegistered)
+  async (req, res) =>
+    Utils.performAction(req, res, DeviceController.isRegistered)
 );
 
 /**
@@ -90,23 +91,82 @@ router.post(
  */
 router.post(
   "/register",
-  requireKey,
-  async (req, res) => await performAction(req, res, registerDevice)
+  (req, res, next) => Utils.requireKey(req, res, next),
+  async (req, res) =>
+    await Utils.performAction(req, res, DeviceController.registerDevice)
 );
-/**
- *
- * @param {Request} req
- * @param {Response} res
- */
-export const isRegistered = async (req, res) => {
-  const { client_key } = req.headers;
-  const { deviceToken } = req.body;
-  if (!deviceToken) {
-    let err = new Error();
-    err.message = "Device Token is required.";
-    throw err;
+
+export class DeviceController {
+  static errors() {
+    return {
+      headerMissing: new Error("Client applicaiton key in header is missing")
+    };
   }
-};
+
+  static async getDevices(req, res) {
+    const { user } = req;
+    if (!user) {
+      let err = new Error();
+      err.message = "No user associated with request.";
+      throw err;
+    }
+    return await findDeviceByClientKey(user.id);
+  }
+  // TODO: Complete method
+  static async isRegistered(req, res) {
+    const { client_key } = req.headers;
+    const { deviceToken } = req.body;
+    if (!deviceToken) {
+      let err = new Error();
+      err.message = "Device Token is required.";
+      throw err;
+    }
+  }
+
+  static async findDevices() {
+    return await Device.find();
+  }
+
+  static async findDeviceByClientKey(appId) {
+    return await Device.find({
+      client_key: await this.lookupApplication(appId)
+    });
+  }
+
+  static async lookupApplication(appId) {
+    return await lookupFullApp(appId);
+  }
+
+  static async lookupApplicationByClientKey(clientKey) {
+    return await Application.findOne({ client_key: clientKey }).select({
+      client_key: 1,
+      secret_key: 1,
+      provider_credentials: 1,
+      database_url: 1
+    });
+  }
+
+  static async registerDevice(req, res) {
+    if (!req.headers) {
+      throw this.errors().headerMissing;
+    }
+    const { client_application_key } = req.headers;
+    if (!client_application_key) {
+      throw this.errors().headerMissing;
+    }
+    let newDevice = new Device(req.body);
+    let application = await this.lookupApplicationByClientKey(
+      client_application_key
+    );
+    if (!application) {
+      return res.status(404).json({
+        error: `Cannot register device with appllication id: ${client_application_key} as it does not exist. `
+      });
+    }
+    await newDevice.save();
+    return { device: newDevice };
+  }
+}
 
 const getDevices = async (req, res) => {
   let application = await lookupFullApp(req.user.id);
@@ -146,14 +206,6 @@ const registerDevice = async (req, res) => {
   }
   await newDevice.save();
   return { device: newDevice, topics: registration };
-};
-
-const performAction = async (req, res, fn) => {
-  try {
-    return res.json(await fn(req, res));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 };
 
 export const DeviceRouter = router;

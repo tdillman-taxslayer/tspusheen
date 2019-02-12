@@ -19,6 +19,20 @@ describe("Utility Tests", () => {
     }
   });
 
+  it("should be able to encrypt a JSON stringified objet", done => {
+    let initValue = JSON.stringify({ test: "value" });
+    let encrypted = Utils.encryptValue(initValue);
+    expect(encrypted).not.to.equal(initValue);
+    expect(encrypted).to.equal(
+      "db23cd9aedc1caae0d771be9430c4e5bb5876c43c986e082dc872755c6227e47"
+    );
+    let decrypted = Utils.decryptValue(
+      "db23cd9aedc1caae0d771be9430c4e5bb5876c43c986e082dc872755c6227e47"
+    );
+    expect(decrypted).to.equal(initValue);
+    done();
+  });
+
   it("requires client application key when present and matches", async done => {
     try {
       let mockRequest = mockReq({

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 
 import cryptoString from "crypto-random-string";
 import bcrypt from "bcryptjs";
@@ -103,8 +103,18 @@ const ApplicationSchema = new Schema({
 ApplicationSchema.statics.generateSecretKey = async function(length) {
   let secretKey = cryptoString(length);
   let salt = await bcrypt.genSalt(10);
-  let hash = await bcrypt.hash(secretKey, salt);
-  return { hash, secretKey };
+  return { hash: await bcrypt.hash(secretKey, salt), secretKey };
+};
+
+ApplicationSchema.statics.generateApplication = async function(
+  body,
+  clientKey,
+  secretKey
+) {
+  let newApp = new Application(body);
+  newApp.client_key = clientKey;
+  newApp.secret_key = secretKey;
+  return newApp.save();
 };
 
 const Application = mongoose.model("applications", ApplicationSchema);

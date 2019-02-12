@@ -1,5 +1,5 @@
 import express from "express";
-import { performAction, requireAdminKey } from "../../utils/utils";
+import { Utils, HeaderSecurity } from "../../utils/utils";
 import Application from "../../models/Application";
 
 const router = express.Router();
@@ -34,8 +34,9 @@ const router = express.Router();
  */
 router.get(
   "/applications/:applicationId",
-  requireAdminKey,
-  async (req, res) => await performAction(req, res, getApplication)
+  (req, res, next) => Utils.requireAdminKey(req, res, next),
+  async (req, res) =>
+    await Utils.performAction(req, res, AdminController.getApplication)
 );
 
 /**
@@ -67,8 +68,8 @@ router.get(
  */
 router.get(
   "/applications/:applicationId/reset",
-  requireAdminKey,
-  async (req, res) => await performAction(req, res, resetSecretKey)
+  (req, res, next) => Utils.requireAdminKey(req, res, next),
+  async (req, res) => await Utils.performAction(req, res, resetSecretKey)
 );
 
 /**
@@ -97,72 +98,78 @@ router.get(
  */
 router.get(
   "/applications",
-  requireAdminKey,
-  async (req, res) => await performAction(req, res, getAllApplications)
+  (req, res, next) => Utils.requireAdminKey(req, res, next),
+  async (req, res) => await Utils.performAction(req, res, getAllApplications)
 );
 
-/**
- *
- * @param {Request} req
- * @param {Response} res
- */
-export const getApplication = async (req, res) => {
-  const { applicationId } = req.params;
-  let application = await Application.findById(applicationId).select(
-    "secret_key client_key provider_credentials"
-  );
-  if (!application) {
-    return res
-      .status(404)
-      .json({ error: `Application with id ${applicationId} was not found.` });
-  }
-  let app = {
-    id: application.id,
-    secret_key: application.secret_key,
-    client_key: application.client_key,
-    name: application.name,
-    provider_credentials: application.provider_credentials
-  };
-  return app;
-};
-
-export const getAllApplications = async (req, res) => {
-  let applications = await Application.find().select(
-    "secret_key client_key provider_credentials database_url"
-  );
-  let resolved = [];
-  applications.forEach(application => {
-    resolved.push({
+export class AdminController {
+  static async getApplication(req, res) {
+    const { applicationId } = req.params;
+    let application = await Application.findById(applicationId).select(
+      "secret_key client_key provider_credentials"
+    );
+    if (!application) {
+      return res
+        .status(404)
+        .json({ error: `Application with id ${applicationId} was not found.` });
+    }
+    let app = {
       id: application.id,
       secret_key: application.secret_key,
       client_key: application.client_key,
       name: application.name,
-      provider_credentials: application.provider_credentials,
-      database_url: application.database_url
-    });
-  });
-  return resolved;
-};
-
-/**
- * Reset the application's secret key
- * @param {Request} req
- * @param {Response} res
- */
-export const resetSecretKey = async (req, res) => {
-  const { applicationId } = req.params;
-  let application = await Application.findById(applicationId).select(
-    "secret_key client_key provider_credentials"
-  );
-  if (!application) {
-    return res
-      .status(404)
-      .json({ error: `Application with id ${applicationId} was not found.` });
+      provider_credentials: application.provider_credentials
+    };
+    return app;
   }
-  let newSecret = await Application.generateSecretKey(40);
-  application.secret_key = newSecret.hash;
-  await application.save();
-  return { id: application.id, secret: newSecret.secretKey };
-};
+
+  static async getAllApplications(req, res) {
+    let applications = await this.findAllApplications(
+      "secret_key client_key provider_credentials database_url"
+    );
+    let resolved = [];
+    applications.forEach(application => {
+      resolved.push({
+        id: application.id,
+        secret_key: application.secret_key,
+        client_key: application.client_key,
+        name: application.name,
+        provider_credentials: application.provider_credentials,
+        database_url: application.database_url
+      });
+    });
+    return resolved;
+  }
+
+  static async resetSecretKey(req, res) {
+    const { applicationId } = req.params;
+    let application = await this.findApplicationById(
+      applicationId,
+      "secret_key client_key provider_credentials"
+    );
+    if (!application) {
+      return res
+        .status(404)
+        .json({ error: `Application with id ${applicationId} was not found.` });
+    }
+    let newSecret = await Application.generateSecretKey(40);
+    application.secret_key = newSecret.hash;
+    await application.save();
+    return { id: application.id, secret: newSecret.secretKey };
+  }
+
+  /**
+   *
+   * @param {ObjectId} id
+   * @param {String} selecting
+   */
+  static async findApplicationById(id, selecting) {
+    return await Application.findById(id).select(selecting);
+  }
+
+  static async findAllApplications(selecting) {
+    return await Application.find().select(selecting);
+  }
+}
 
 export const AdminRouter = router;

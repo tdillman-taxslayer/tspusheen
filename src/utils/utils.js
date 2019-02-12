@@ -14,7 +14,7 @@ export class Utils {
     let cipher = crypto.createCipher("aes-256-cbc", SERVER_ENCRYPTION_KEY);
     let crypted = cipher.update(text, "utf8", "hex");
     crypted += cipher.final("hex");
-    return crypted;
+    return `${crypted}`;
   }
   /**
    * Decrypts String via AES 256 CBC
@@ -27,7 +27,7 @@ export class Utils {
     let decipher = crypto.createDecipher("aes-256-cbc", SERVER_ENCRYPTION_KEY);
     let dec = decipher.update(encryptedValue, "hex", "utf8");
     dec += decipher.final("utf8");
-    return dec;
+    return `${dec}`;
   }
 
   /**
