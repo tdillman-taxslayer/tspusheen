@@ -6,7 +6,7 @@ import Application from "../../models/Application";
 import Device from "../../models/Device";
 import { FirebaseNotificationAdapter } from "../../utils/FirebaseNotificationAdapter";
 import { NotificationAdapter } from "../../utils/NotificationAdapter";
-
+import { Utils } from "../../utils/utils";
 const router = express.Router();
 
 // Send Notification to all devices registered to application
@@ -15,7 +15,7 @@ router.put(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) =>
-    await performAction(req, res, NotificationController.sendAll)
+    await Utils.performAction(req, res, NotificationController.sendAll)
 );
 // Target specific user(s)
 // PUT /notifications/target
@@ -23,7 +23,7 @@ router.put(
   "/user",
   passport.authenticate("jwt", { session: false }),
   async (req, res) =>
-    await performAction(req, res, NotificationController.sendToTarget)
+    await Utils.performAction(req, res, NotificationController.sendToTarget)
 );
 
 export class NotificationController {
@@ -116,64 +116,5 @@ export class NotificationController {
     }
   }
 }
-
-/**
- *
- * @param {*} application
- * @param {*} req
- * @returns {Promise<firebase.messaging>}
- */
-export const initOrReturnFirebaseApp = async (application, req) => {
-  let foundApp;
-  let fb;
-  let foundIndex;
-  const { provider_credentials, database_url, id } = application;
-  for (let i = 0; i < firebase.apps.length; i++) {
-    let e = firebase.apps[i];
-    if (e.name === id) {
-      foundApp = e;
-      foundIndex = i;
-    }
-  }
-  if (foundApp) {
-    return foundApp.messaging();
-  } else {
-    let initFB = initFirebase(provider_credentials, database_url, id);
-    console.log(firebase.app.name);
-    console.log(firebase);
-    return initFB.messaging();
-  }
-
-  return firebase.messaging(firebase.apps[foundIndex]);
-};
-
-export const subscribeToTopic = async (application, token, req) => {
-  let fb = await initOrReturnFirebaseApp(application, req);
-  return await fb.subscribeToTopic(token, application.id);
-};
-
-/**
- *
- * @param {Object} details database authentication details
- * @param {String} dbURL url of database
- * @param {String} appName the unique name of application.  Usually app id
- */
-const initFirebase = (details, dbURL, appName) => {
-  return firebase.initializeApp(
-    {
-      credential: firebase.credential.cert(details),
-      databaseURL: dbURL
-    },
-    appName
-  );
-};
-
-const performAction = async (req, res, fn) => {
-  try {
-    return res.json(await fn(req, res));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 export const NotificationRouter = router;

@@ -23,10 +23,12 @@ describe("Device Controller Tests", () => {
       );
     });
   });
+
   afterEach(function(done) {
     this.timeout(5000);
     mockgoose.helper.reset().then(() => done());
   });
+
   it("should register device", async () => {
     try {
       let app = await Application.generateApplication(
