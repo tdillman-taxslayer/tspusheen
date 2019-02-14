@@ -9,7 +9,7 @@ let mockgoose = new Mockgoose(mongoose);
 
 describe("Application Controller Tests", () => {
   before(function(done) {
-    this.timeout(5000);
+    this.timeout(9000);
     mockgoose.prepareStorage().then(() => {
       mongoose.connect(
         "mongodb://localhost:27017/test",
