@@ -48,7 +48,8 @@ router.get(
 );
 router.post(
   "/",
-  async (req, res) => await Utils.performAction(req, res, create)
+  async (req, res) =>
+    await Utils.performAction(req, res, ApplicationController.create)
 );
 /**
  * @swagger
