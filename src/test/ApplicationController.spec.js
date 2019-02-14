@@ -119,10 +119,31 @@ describe("Application Controller Tests", () => {
     expect(result.token).to.be.undefined;
   });
 
-  it("should get all applications");
+  it("should get all applications", async () => {
+    let apps = await createApplications(10);
+    let req = mockReq();
+    let res = mockRes();
+    let result = await ApplicationController.getAll(req, res);
+    expect(result).to.not.be.undefined;
+    expect(result.length).to.equal(10);
+  }).timeout(5000);
 });
 
-const createApplications = amount => {
+const createApplications = async amount => {
   let promises = [];
-  for (let i = 0; i < amount; i++) {}
+  for (let i = 0; i < amount; i++) {
+    promises.push(
+      Application.generateApplication(
+        {
+          provider: "firebase",
+          provider_credentials: { test: "creds" },
+          name: "testapp",
+          database_url: "http://test.com"
+        },
+        "clientkey",
+        (await Application.generateSecretKey(40)).hash
+      )
+    );
+  }
+  return await Promise.all(promises);
 };

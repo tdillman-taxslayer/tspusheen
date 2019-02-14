@@ -146,9 +146,7 @@ class MockNotificationController extends NotificationController {
    * @returns {NotificationAdapter}
    */
   static getAdapter(app) {
-    console.log("getting adapter");
     const { database_url, provider_credentials } = app;
-
     return new MockFirebaseNoteAdapter({
       name: app.id,
       credentials: provider_credentials,
