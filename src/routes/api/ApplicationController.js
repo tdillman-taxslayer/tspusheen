@@ -81,7 +81,8 @@ router.post(
 // /applications/authenticate
 router.post(
   "/authenticate",
-  async (req, res) => await Utils.performAction(req, res, authenticate)
+  async (req, res) =>
+    await Utils.performAction(req, res, ApplicationController.authenticate)
 );
 
 export class ApplicationController {
