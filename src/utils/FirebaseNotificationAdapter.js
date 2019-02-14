@@ -41,4 +41,61 @@ export class FirebaseNotificationAdapter extends NotificationAdapter {
       name
     );
   }
+
+  async send(topic, content) {
+    let result = await this.app.messaging().sendToTopic(topic, {
+      notification: { title: content.title, body: content.body }
+    });
+    return result;
+  }
+  /**
+   *
+   * @param {String} token
+   * @param {{ title: String, body: String }} content
+   */
+  async sendTo(token, content) {
+    let message = {
+      notification: {
+        title: content.title,
+        body: content.body
+      }
+    };
+    let result = await this.app.messaging().sendToDevice(token, message);
+    return result;
+  }
+  /**
+   *
+   * @param {Array<String>} devices
+   * @param {{ title: String, body: String }} content
+   */
+  async sendToSeveral(devices, content) {
+    let message = {
+      notification: {
+        title: content.title,
+        body: content.body
+      }
+    };
+    let result = await this.app.messaging().sendToDevice(devices, message);
+    return result;
+  }
+
+  /**
+   *
+   * @param {String} token
+   * @param {String} topic
+   */
+  async unsubscribe(token, topic) {
+    let result = await this.app.messaging().unsubscribeFromTopic(token, topic);
+    return result;
+  }
+
+  /**
+   *
+   * @param {Array<String>} tokens
+   * @param {String} topic
+   */
+  async unsubscribeMany(tokens, topic) {
+    let result = await this.app.messaging().unsubscribeFromTopic(tokens, topic);
+    return result;
+  }
 }

@@ -116,6 +116,18 @@ ApplicationSchema.statics.generateApplication = async function(
   newApp.secret_key = secretKey;
   return newApp.save();
 };
+/**
+ * @param {Object} constraints
+ */
+ApplicationSchema.statics.lookupApp = async constraints => {
+  return await Application.findOne(constraints).select({
+    client_key: 1,
+    secret_key: 1,
+    provider_credentials: 1,
+    database_url: 1,
+    name: 1
+  });
+};
 
 const Application = mongoose.model("applications", ApplicationSchema);
 export default Application;

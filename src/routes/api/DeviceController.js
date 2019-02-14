@@ -1,11 +1,7 @@
 import express from "express";
 import passport from "passport";
 import Device from "../../models/Device";
-import {
-  lookupFullApp,
-  initOrReturnFirebaseApp
-} from "./NotificationController";
-import { Utils, HeaderSecurity } from "../../utils/utils";
+import { Utils } from "../../utils/utils";
 import Application from "../../models/Application";
 
 const router = express.Router();
@@ -134,16 +130,11 @@ export class DeviceController {
   }
 
   static async lookupApplication(appId) {
-    return await lookupFullApp(appId);
+    return await Application.lookupApp({ _id: appId });
   }
 
   static async lookupApplicationByClientKey(clientKey) {
-    return await Application.findOne({ client_key: clientKey }).select({
-      client_key: 1,
-      secret_key: 1,
-      provider_credentials: 1,
-      database_url: 1
-    });
+    return await Application.lookupApp({ client_key: clientKey });
   }
 
   static async registerDevice(req, res) {
@@ -155,9 +146,9 @@ export class DeviceController {
       throw this.errors().headerMissing;
     }
     let newDevice = new Device(req.body);
-    let application = await this.lookupApplicationByClientKey(
-      client_application_key
-    );
+    let application = await Application.lookupApp({
+      client_key: client_application_key
+    });
     if (!application) {
       return res.status(404).json({
         error: `Cannot register device with appllication id: ${client_application_key} as it does not exist. `
@@ -167,45 +158,5 @@ export class DeviceController {
     return { device: newDevice };
   }
 }
-
-const getDevices = async (req, res) => {
-  let application = await lookupFullApp(req.user.id);
-  return await Device.find({ client_key: application.client_key });
-};
-
-/**
- *
- * @param {Request} req
- * @param {Reponse} res
- */
-const registerDevice = async (req, res) => {
-  const { client_application_key } = req.headers;
-  let newDevice = new Device(req.body);
-  let application = await Application.findOne({
-    client_key: client_application_key
-  }).select({
-    client_key: 1,
-    secret_key: 1,
-    provider_credentials: 1,
-    database_url: 1
-  });
-  if (!application) {
-    return res.status(404).json({
-      error: `Cannot register device with appllication id: ${client_application_key} as it does not exist. `
-    });
-  }
-
-  let fb = await initOrReturnFirebaseApp(application, req);
-  let registration = await fb.subscribeToTopic(
-    newDevice.device_token,
-    application.id
-  );
-  if (registration.errors.length > 0) {
-    let newErr = new Error(registration.errors[0].error);
-    throw newErr;
-  }
-  await newDevice.save();
-  return { device: newDevice, topics: registration };
-};
 
 export const DeviceRouter = router;

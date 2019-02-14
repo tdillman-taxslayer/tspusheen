@@ -6,12 +6,20 @@ export class NotificationAdapter {
     this.app = null;
   }
   async subscribe(topic, token) {}
+  /**
+   *
+   * @param {String} topic
+   * @param {{title: String, body: String}} content
+   */
+  async send(topic, content) {}
 
-  send(topic) {}
+  findApp(name) {}
 
-  getApp(name) {}
+  async unsubscribe(token, topic) {}
 
-  unsubscribe(topic) {}
+  async unsubscribeMany(tokens, topic) {}
 
-  sendTo(device) {}
+  async sendTo(token, content) {}
+
+  async sendToSeveral(devices, content) {}
 }

@@ -29,15 +29,25 @@ describe("Device Controller Tests", () => {
   });
   it("should register device", async () => {
     try {
+      let app = await Application.generateApplication(
+        {
+          provider: "firebase",
+          provider_credentials: { test: "creds" },
+          name: "testapp",
+          database_url: "http://test.com"
+        },
+        "clientkey",
+        (await Application.generateSecretKey(40)).hash
+      );
       let req = mockReq({
         body: {
-          client_key: "test_123",
+          client_key: app.client_key,
           userId: "test_user",
           device_token: "test_device_token",
           device_type: "ios"
         },
         headers: {
-          client_application_key: "test_123"
+          client_application_key: app.client_key
         }
       });
       let res = mockRes();

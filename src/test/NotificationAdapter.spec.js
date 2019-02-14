@@ -15,29 +15,91 @@ describe("Notification Adapter Tests", () => {
     done();
   });
 
-  it("should subscribe to topic", done => {
-    done(new Error("not implemented"));
+  it("should subscribe to topic", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let results = await adapter.subscribe();
+    expect(results).to.not.be.null;
+    expect(results).to.not.be.undefined;
   });
-  // it("should send to topic", done => {
-  //   done(new Error("not implemented"));
-  // });
-  // it("should initalize or return app", done => {
-  //   let adapter = new MockFirebaseNotificationAdapter({ app: "credentials" });
-  //   let app = adapter.findOrInitApp("test123");
-  //   expect(app.name).to.equal("test123");
-  // });
-  // it("should get specific app", done => {
-  //   done(new Error("not implemented"));
-  // });
-  // it("should unsubscribe to topic", done => {
-  //   done(new Error("not implemented"));
-  // });
-  // it("should send to specific device", done => {
-  //   done(new Error("not implemented"));
-  // });
+  it("should send to topic", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let results = await adapter.send("testtopic", {
+      title: "test",
+      body: "test body"
+    });
+    expect(results).to.not.be.null;
+    expect(results).to.not.be.undefined;
+    expect(results.messageId).to.equal(1234);
+  });
+
+  it("should unsubscribe to topic", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let result = await adapter.unsubscribe("testtoken123", "testtopic");
+    expect(result).to.not.be.null;
+    expect(result).to.not.be.undefined;
+    expect(result.successCount).to.equal(1);
+  });
+
+  it("should send to specific device", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let results = await adapter.sendTo("testDevice", {
+      title: "test",
+      body: "test body"
+    });
+    expect(results).to.not.be.null;
+    expect(results).to.not.be.undefined;
+    expect(results.successCount).to.equal(1);
+  });
+
+  it("should send to several devices", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let result = await adapter.sendToSeveral(["device1", "device2"], {
+      title: "test",
+      body: "test body"
+    });
+    expect(result).to.not.be.null;
+    expect(result.successCount).to.equal(2);
+    expect(result.failureCount).to.equal(0);
+  });
+
+  it("should unsubscribe many devices", async () => {
+    let adapter = new MockFirebaseNoteAdapter({
+      name: "testapp",
+      credentials: { test: "creds" },
+      dbURL: "http://test.com"
+    });
+    let result = await adapter.unsubscribeMany(["d1", "d2"], "topci");
+    expect(result).to.not.be.null;
+    expect(result).to.not.be.undefined;
+    expect(result.successCount).to.equal(2);
+  });
 });
 
-class MockFirebaseNoteAdapter extends FirebaseNotificationAdapter {
+export class MockFirebaseNoteAdapter extends FirebaseNotificationAdapter {
+  /**
+   *
+   * @param {{ name: String, credentials: Object, dbURL: String}} config
+   */
   constructor(config) {
     super(config);
   }
@@ -63,5 +125,46 @@ class MockFirebaseAdmin {
     this.databaseURL = url;
     this.apps = [];
     this.apps.push({ name });
+  }
+
+  messaging() {
+    return {
+      subscribeToTopic: this.subscribeToTopic,
+      sendToTopic: (topic, content) => {
+        return { messageId: 1234 };
+      },
+      sendToDevice: (token, payload) => {
+        let count = 1;
+        if (Array.isArray(token)) {
+          count = token.length;
+        }
+        return {
+          canonicalRegistrationTokenCount: 1,
+          failureCount: 0,
+          multicastId: 123,
+          results: [],
+          successCount: count
+        };
+      },
+      unsubscribeFromTopic: (token, topic) => {
+        let count = 1;
+        if (Array.isArray(token)) {
+          count = token.length;
+        }
+        return {
+          errors: [],
+          failureCount: 0,
+          successCount: count
+        };
+      }
+    };
+  }
+
+  subscribeToTopic(token, topic) {
+    return {
+      errors: [],
+      failureCount: 0,
+      successCount: 1
+    };
   }
 }
