@@ -8,7 +8,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import { MONGODB_URI, PORT } from "./config/config";
 import Routes from "./routes";
 import path from "path";
-const app = express();
+export const app = express();
 const server = http.createServer(app);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({ limit: "15mb" }));
@@ -45,6 +45,6 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swagSpec));
 require("./config/passport")(passport);
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
-Routes(app);
+export const routes = new Routes(app);
 
 app.listen(PORT, () => console.log(`Running on port: ${PORT}`));
