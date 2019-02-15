@@ -1,5 +1,52 @@
 import mongoose, { Schema } from "mongoose";
-
+/**
+ * @swagger
+ * definitions:
+ *  Device:
+ *    required:
+ *    - client_key
+ *    - userId
+ *    - device_token
+ *    - device_type
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      userId:
+ *        type: string
+ *        description: self generated and assigned key used to identify a user on a seperate system.
+ *      client_key:
+ *        type: string
+ *      device_token:
+ *        type: string
+ *      device_type:
+ *        type: string
+ *        enum:
+ *        - "ios"
+ *        - "android"
+ *        - "web"
+ *  Device_Create:
+ *    required:
+ *    - client_key
+ *    - userId
+ *    - device_token
+ *    - device_type
+ *    type: object
+ *    properties:
+ *      userId:
+ *        type: string
+ *        description: self generated and assigned key used to identify a user on a seperate system.
+ *      client_key:
+ *        type: string
+ *      device_token:
+ *        type: string
+ *      device_type:
+ *        type: string
+ *        enum:
+ *        - "ios"
+ *        - "android"
+ *        - "web"
+ */
 const DeviceSchema = new Schema({
   /* this can be any user id defined by the client */
   userId: {

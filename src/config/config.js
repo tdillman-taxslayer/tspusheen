@@ -4,3 +4,5 @@ export const MONGODB_URI =
 export const SERVER_ENCRYPTION_KEY =
   process.env.SERVER_ENCRYPTION_KEY || "some_encryption_key";
 export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "some_secret_key";
+export const ADMIN_CLIENT_HEADER_KEY =
+  process.env.ADMIN_CLIENT_HEADER_KEY || "admin_client_key";
