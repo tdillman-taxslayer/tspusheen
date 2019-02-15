@@ -3,14 +3,20 @@ import { ApplicationRouter } from "./api/ApplicationController";
 import { DeviceRouter } from "./api/DeviceController";
 import { NotificationRouter } from "./api/NotificationController";
 import { AdminRouter } from "./api/AdminController";
-/**
- *
- * @param {Express.Application} app
- */
-const Routes = app => {
-  app.use("/api/v1/applications", ApplicationRouter);
-  app.use("/api/v1/devices", DeviceRouter);
-  app.use("/api/v1/notifications", NotificationRouter);
-  app.use("/api/v1/utils", AdminRouter);
-};
-export default Routes;
+
+export default class Routes {
+  /**
+   *
+   * @param {Express.Application} app
+   */
+  constructor(app) {
+    this.applicationRouter = ApplicationRouter;
+    this.deviceRoute = DeviceRouter;
+    this.notificationRouter = NotificationRouter;
+    this.adminRouter = AdminRouter;
+    app.use("/api/v1/applications", this.applicationRouter);
+    app.use("/api/v1/devices", this.deviceRoute);
+    app.use("/api/v1/notifications", this.notificationRouter);
+    app.use("/api/v1/utils", this.adminRouter);
+  }
+}

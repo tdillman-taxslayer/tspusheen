@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import cryptoString from "crypto-random-string";
 import jwt from "jsonwebtoken";
 import Application from "../../models/Application";
+import { Utils } from "../../utils/utils";
 import { JWT_SECRET_KEY } from "../../config/config";
 
 const router = express.Router();
@@ -39,14 +40,17 @@ const router = express.Router();
  *          schema:
  *            $ref: "#/definitions/Application"
  */
-// /applications
 router.get(
   "/",
   // passport.authenticate("jwt", { session: false }),
-  async (req, res) => await performAction(req, res, getAll)
+  async (req, res) =>
+    await Utils.performAction(req, res, ApplicationController.getAll)
 );
-// /applications
-router.post("/", async (req, res) => await performAction(req, res, create));
+router.post(
+  "/",
+  async (req, res) =>
+    await Utils.performAction(req, res, ApplicationController.create)
+);
 /**
  * @swagger
  * paths:
@@ -77,57 +81,48 @@ router.post("/", async (req, res) => await performAction(req, res, create));
 // /applications/authenticate
 router.post(
   "/authenticate",
-  async (req, res) => await performAction(req, res, authenticate)
+  async (req, res) =>
+    await Utils.performAction(req, res, ApplicationController.authenticate)
 );
 
-const performAction = async (req, res, fn) => {
-  try {
-    return res.json(await fn(req, res));
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getAll = async (req, res) => {
-  return await Application.find().select("client_key");
-};
-
-const create = async (req, res) => {
-  let newApplication = new Application(req.body);
-  newApplication.client_key = cryptoString(40);
-  let secretKey = await Application.generateSecretKey(40);
-  newApplication.secret_key = secretKey.hash;
-  return {
-    application: await newApplication.save(),
-    secret: secretKey.secretKey
-  };
-};
-/**
- * Authenticate with application requiring id and secret key
- * @param {Request} req
- * @param {Response} res
- */
-const authenticate = async (req, res) => {
-  const { id, secretKey } = req.body;
-  if (!id) {
-    return res.status(400).json({ error: "id parameter required." });
-  }
-  let application = await Application.findById(id).select("secret_key");
-  if (!application) {
-    return res
-      .status(404)
-      .json({ error: `Application with id ${id} does not exist.` });
-  }
-  let compare = await bcrypt.compare(secretKey, application.secret_key);
-  if (!compare) {
-    return res.status(403).json({ error: "Invalid secret key." });
+export class ApplicationController {
+  static async getAll(req, res) {
+    return await Application.find().select("client_key");
   }
 
-  // generate token
-  let token = jwt.sign({ id: application.id }, JWT_SECRET_KEY, {
-    expiresIn: 3600
-  });
-  return { token: `Bearer ${token}` };
-};
+  static async create(req, res) {
+    let newApp = new Application(req.body);
+    newApp.client_key = cryptoString(40);
+    let secret = await Application.generateSecretKey(40);
+    newApp.secret_key = secret.hash;
+    return {
+      application: await newApp.save(),
+      secret: secret.secretKey
+    };
+  }
+
+  static async authenticate(req, res) {
+    const { id, secretKey } = req.body;
+    if (!id) {
+      return res.status(400).json({ error: "id parameter required." });
+    }
+    let application = await Application.findById(id).select("secret_key");
+    if (!application) {
+      return res
+        .status(404)
+        .json({ error: `Application with id ${id} does not exist.` });
+    }
+    let compare = await bcrypt.compare(secretKey, application.secret_key);
+    if (!compare) {
+      return res.status(403).json({ error: "Invalid secret key." });
+    }
+
+    // generate token
+    let token = jwt.sign({ id: application.id }, JWT_SECRET_KEY, {
+      expiresIn: 3600
+    });
+    return { token: `Bearer ${token}` };
+  }
+}
 
 export const ApplicationRouter = router;
